@@ -1,0 +1,37 @@
+<% if dashboard.board_sections.empty? %>
+  <div class="empty-state">
+    <h2>No cards match these filters</h2>
+    <p>Change the assignee or board filter to see more cards.</p>
+  </div>
+<% else %>
+  <% dashboard.board_sections.each do |board| %>
+    <section class="board-section">
+      <div class="board-header">
+        <h2><%= h(board[:name]) %></h2>
+        <span class="badge text-bg-light"><%= board[:count] %> cards</span>
+      </div>
+
+      <div class="status-grid">
+        <% board[:columns].each do |column| %>
+          <div class="status-column status-<%= h(column[:key]) %>">
+            <div class="status-header">
+              <span><%= h(column[:name]) %></span>
+              <span class="count"><%= column[:count] %></span>
+            </div>
+
+            <div class="card-stack">
+              <% column[:cards].each do |card| %>
+                <a class="work-card" href="<%= h(card[:url]) %>" target="_blank" rel="noreferrer">
+                  <strong><%= h(card[:title]) %></strong>
+                  <span><span class="card-icon">User</span> <%= h(card[:assignees].empty? ? "Unassigned" : card[:assignees].join(", ")) %></span>
+                  <span><span class="card-icon">Board</span> <%= h(card[:board_name]) %></span>
+                  <span><span class="card-icon">Time</span> <%= h(card[:last_active_label]) %></span>
+                </a>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </section>
+  <% end %>
+<% end %>

@@ -1,0 +1,245 @@
+:root {
+  --app-bg: #f6f7fb;
+  --ink: #172033;
+  --muted: #657085;
+  --line: #dfe4ee;
+  --brand: #2563eb;
+}
+
+body {
+  background: var(--app-bg);
+  color: var(--ink);
+}
+
+.app-nav {
+  background: #ffffff;
+  border-bottom: 1px solid var(--line);
+}
+
+.navbar-brand {
+  color: var(--ink);
+  font-weight: 800;
+}
+
+.page-header {
+  align-items: flex-start;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.page-header h1 {
+  font-size: clamp(2rem, 4vw, 3.25rem);
+  font-weight: 800;
+  line-height: 1;
+  margin: 0;
+}
+
+.eyebrow {
+  color: var(--brand);
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  margin-bottom: 0.35rem;
+  text-transform: uppercase;
+}
+
+.muted {
+  color: var(--muted);
+  margin: 0.65rem 0 0;
+}
+
+.toolbar {
+  align-items: center;
+  display: flex;
+  gap: 0.75rem;
+}
+
+.toolbar .form-select {
+  min-width: 10rem;
+}
+
+.sprint-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+}
+
+.sprint-tile {
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--ink);
+  display: grid;
+  gap: 0.75rem;
+  padding: 1rem;
+  text-decoration: none;
+}
+
+.sprint-tile:hover {
+  border-color: var(--brand);
+  box-shadow: 0 10px 28px rgb(37 99 235 / 12%);
+}
+
+.sprint-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+
+.sprint-meta,
+.filter-label {
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.filter-row {
+  display: grid;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.nav-pills {
+  gap: 0.5rem;
+  margin-top: 0.4rem;
+}
+
+.nav-pills .nav-link {
+  background: #ffffff;
+  border: 1px solid var(--line);
+  color: var(--ink);
+}
+
+.nav-pills .nav-link.active {
+  background: var(--brand);
+  border-color: var(--brand);
+}
+
+.board-section {
+  margin-top: 1.5rem;
+}
+
+.board-header {
+  align-items: center;
+  display: flex;
+  gap: 0.75rem;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.board-header h2 {
+  font-size: 1.15rem;
+  font-weight: 800;
+  margin: 0;
+}
+
+.status-grid {
+  display: grid;
+  gap: 0.9rem;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+}
+
+.status-column {
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-top: 5px solid #64748b;
+  border-radius: 8px;
+  min-height: 10rem;
+  padding: 0.75rem;
+}
+
+.status-maybe { border-top-color: #8b5cf6; }
+.status-not-now { border-top-color: #64748b; }
+.status-done { border-top-color: #16a34a; }
+.status-to-do,
+.status-todo { border-top-color: #f59e0b; }
+.status-in-progress { border-top-color: #06b6d4; }
+.status-in-review { border-top-color: #f97316; }
+.status-new { border-top-color: #ec4899; }
+
+.status-header {
+  align-items: center;
+  display: flex;
+  font-size: 0.85rem;
+  font-weight: 800;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+  text-transform: uppercase;
+}
+
+.status-header .count {
+  background: #eef2ff;
+  border-radius: 999px;
+  color: #3730a3;
+  min-width: 1.75rem;
+  padding: 0.15rem 0.5rem;
+  text-align: center;
+}
+
+.card-stack {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.work-card {
+  background: #fbfcff;
+  border: 1px solid #e5eaf4;
+  border-radius: 8px;
+  color: var(--ink);
+  display: grid;
+  gap: 0.45rem;
+  padding: 0.85rem;
+  text-decoration: none;
+}
+
+.work-card:hover {
+  border-color: var(--brand);
+  box-shadow: 0 8px 20px rgb(15 23 42 / 9%);
+}
+
+.work-card strong {
+  line-height: 1.25;
+}
+
+.work-card span {
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+.card-icon {
+  color: var(--ink) !important;
+  display: inline-block;
+  font-size: 0.72rem !important;
+  font-weight: 800;
+  width: 2.6rem;
+}
+
+.empty-state {
+  background: #ffffff;
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+  padding: 2rem;
+}
+
+.empty-state h1,
+.empty-state h2 {
+  font-weight: 800;
+}
+
+.error-state {
+  border-color: #fecaca;
+}
+
+@media (max-width: 720px) {
+  .page-header,
+  .toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .toolbar .form-select,
+  .toolbar .btn {
+    width: 100%;
+  }
+}

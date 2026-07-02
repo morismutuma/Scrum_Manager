@@ -1,0 +1,56 @@
+<section
+  class="dashboard"
+  data-dashboard
+  data-sprint-tag="<%= h(@dashboard.tag_title) %>"
+  data-assignee="<%= h(@selected_assignee) %>"
+  data-board="<%= h(@selected_board) %>">
+  <div class="page-header">
+    <div>
+      <p class="eyebrow">Sprint dashboard</p>
+      <h1><%= h(@dashboard.tag_title) %></h1>
+      <p class="muted">
+        <span data-card-count><%= @dashboard.cards.length %></span> cards ·
+        Last updated <span data-last-updated><%= h(@dashboard.generated_at.strftime("%H:%M:%S")) %></span>
+      </p>
+    </div>
+
+    <div class="toolbar">
+      <select class="form-select" data-polling-select aria-label="Polling interval">
+        <option value="0">Polling off</option>
+        <option value="5000">Every 5 sec</option>
+        <option value="10000">Every 10 sec</option>
+        <option value="30000">Every 30 sec</option>
+      </select>
+      <button class="btn btn-primary" type="button" data-refresh-button>Refresh now</button>
+    </div>
+  </div>
+
+  <div class="filter-row">
+    <div>
+      <span class="filter-label">Assignee</span>
+      <div class="nav nav-pills">
+        <% @assignees.each do |assignee| %>
+          <a class="nav-link <%= selected?(@selected_assignee, assignee) %>" href="?assignee=<%= Rack::Utils.escape(assignee) %>&board=<%= Rack::Utils.escape(@selected_board) %>">
+            <%= h(assignee) %>
+          </a>
+        <% end %>
+      </div>
+    </div>
+
+    <div>
+      <span class="filter-label">Board</span>
+      <div class="nav nav-pills">
+        <% @boards.each do |board| %>
+          <a class="nav-link <%= selected?(@selected_board, board) %>" href="?assignee=<%= Rack::Utils.escape(@selected_assignee) %>&board=<%= Rack::Utils.escape(board) %>">
+            <%= h(board) %>
+          </a>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div class="alert alert-danger d-none" role="alert" data-error-banner></div>
+  <div data-board-container>
+    <%= erb :_boards, locals: { dashboard: @dashboard } %>
+  </div>
+</section>

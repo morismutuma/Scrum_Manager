@@ -1,0 +1,23 @@
+<section class="page-header">
+  <div>
+    <p class="eyebrow">Fizzy Scrum Dashboard</p>
+    <h1>Sprints</h1>
+  </div>
+  <a class="btn btn-primary" href="/">Refresh</a>
+</section>
+
+<% if @sprints.empty? %>
+  <div class="empty-state">
+    <h2>No sprint tags found</h2>
+    <p>Fizzy returned no tags beginning with <code>sprint</code>.</p>
+  </div>
+<% else %>
+  <div class="sprint-grid">
+    <% @sprints.each do |sprint| %>
+      <a class="sprint-tile" href="/sprints/<%= Rack::Utils.escape_path(sprint["title"]) %>">
+        <span class="sprint-title"><%= h(sprint["title"]) %></span>
+        <span class="sprint-meta">Open dashboard</span>
+      </a>
+    <% end %>
+  </div>
+<% end %>
