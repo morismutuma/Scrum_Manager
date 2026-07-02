@@ -1,0 +1,36 @@
+# Environment
+.env
+.env.*
+!.env.example
+
+# Bundler
+/.bundle/
+/vendor/bundle/
+
+# Ruby
+*.gem
+*.rbc
+/.ruby-version
+/.ruby-gemset
+
+# Rack/Sinatra runtime
+/tmp/
+/log/
+*.pid
+*.seed
+
+# Coverage and reports
+/coverage/
+/.yardoc/
+/doc/
+
+# OS/editor files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# Local tool state
+/.codex/
+/.agents/
