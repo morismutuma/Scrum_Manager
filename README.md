@@ -26,6 +26,9 @@ Edit `.env`:
 FIZZY_TOKEN=your_fizzy_personal_access_token
 FIZZY_ACCOUNT_SLUG=6116053
 CACHE_TTL_SECONDS=5
+FIZZY_LOG_HTTP=false
+FIZZY_LOG_RESPONSE_BODY=true
+FIZZY_LOG_BODY_LIMIT=12000
 ```
 
 Load the environment and run the app:
@@ -58,3 +61,22 @@ FIZZY_ACCOUNT_SLUG
 ```
 
 `CACHE_TTL_SECONDS` is optional and defaults to `5`.
+
+## Fizzy HTTP Logging
+
+To troubleshoot API responses, enable request/response logging:
+
+```bash
+FIZZY_LOG_HTTP=true
+```
+
+The bearer token is redacted in logs. Response bodies are logged by default and truncated to `FIZZY_LOG_BODY_LIMIT` bytes.
+
+Useful troubleshooting run:
+
+```bash
+export $(grep -v '^#' .env | xargs)
+FIZZY_LOG_HTTP=true bundle exec rackup -p 4567
+```
+
+Then open `/` and inspect the terminal output for the `/tags` responses.

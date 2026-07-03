@@ -15,6 +15,9 @@ module ScrumManager
     def initialize(token:, account_slug:)
       @token = token.to_s.strip
       @account_slug = account_slug.to_s.strip.sub(%r{\A/+}, "")
+      @log_http = truthy?(ENV["FIZZY_LOG_HTTP"])
+      @log_response_body = ENV.fetch("FIZZY_LOG_RESPONSE_BODY", "true") != "false"
+      @log_body_limit = Integer(ENV.fetch("FIZZY_LOG_BODY_LIMIT", "12000"))
 
       raise ConfigurationError, "Set FIZZY_TOKEN in your environment." if @token.empty?
       raise ConfigurationError, "Set FIZZY_ACCOUNT_SLUG in your environment." if @account_slug.empty?
@@ -68,12 +71,19 @@ module ScrumManager
 
     def get_json(path, params = {})
       uri = build_uri(path, params)
+      request_headers = {
+        "Authorization" => "Bearer [REDACTED]",
+        "Accept" => "application/json"
+      }
+      log_request("GET", uri, request_headers)
+
       response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: uri.scheme == "https") do |http|
         request = Net::HTTP::Get.new(uri)
         request["Authorization"] = "Bearer #{@token}"
         request["Accept"] = "application/json"
         http.request(request)
       end
+      log_response(response)
 
       unless response.is_a?(Net::HTTPSuccess)
         raise RequestError, "GET #{uri.path} failed with #{response.code}: #{response.body}"
@@ -112,6 +122,34 @@ module ScrumManager
 
     def card_path(number)
       "/#{@account_slug}/cards/#{number}"
+    end
+
+    def truthy?(value)
+      %w[1 true yes on].include?(value.to_s.downcase)
+    end
+
+    def log_request(method, uri, headers)
+      return unless @log_http
+
+      warn "[Fizzy] request #{method} #{uri}"
+      headers.each { |key, value| warn "[Fizzy] request header #{key}: #{value}" }
+    end
+
+    def log_response(response)
+      return unless @log_http
+
+      warn "[Fizzy] response status #{response.code} #{response.message}"
+      response.each_header do |key, value|
+        warn "[Fizzy] response header #{key}: #{value}"
+      end
+      return unless @log_response_body
+
+      body = response.body.to_s
+      if body.length > @log_body_limit
+        warn "[Fizzy] response body #{body.byteslice(0, @log_body_limit)}... [truncated #{body.length - @log_body_limit} bytes]"
+      else
+        warn "[Fizzy] response body #{body}"
+      end
     end
   end
 end
