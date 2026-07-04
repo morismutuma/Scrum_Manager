@@ -10,7 +10,6 @@ module ScrumManager
     class RequestError < StandardError; end
 
     BASE_URL = "https://app.fizzy.do"
-    PER_PAGE = 100
 
     def initialize(token:, account_slug:)
       @token = token.to_s.strip
@@ -54,23 +53,25 @@ module ScrumManager
     end
 
     def paginated_json(path, params = {})
-      page = 1
+      next_uri = build_uri(path, params)
       results = []
 
-      loop do
-        payload = get_json(path, params.merge(page: page, per_page: PER_PAGE))
+      while next_uri
+        payload, response = get_json_response(next_uri)
         page_items = Array(payload)
         results.concat(page_items)
-        break if page_items.length < PER_PAGE
 
-        page += 1
+        next_uri = next_link_uri(response)
       end
 
       results
     end
 
     def get_json(path, params = {})
-      uri = build_uri(path, params)
+      get_json_response(build_uri(path, params)).first
+    end
+
+    def get_json_response(uri)
       request_headers = {
         "Authorization" => "Bearer [REDACTED]",
         "Accept" => "application/json"
@@ -89,7 +90,7 @@ module ScrumManager
         raise RequestError, "GET #{uri.path} failed with #{response.code}: #{response.body}"
       end
 
-      JSON.parse(response.body)
+      [JSON.parse(response.body), response]
     rescue JSON::ParserError => e
       raise RequestError, "Fizzy returned invalid JSON: #{e.message}"
     rescue SocketError, SystemCallError, Timeout::Error => e
@@ -122,6 +123,22 @@ module ScrumManager
 
     def card_path(number)
       "/#{@account_slug}/cards/#{number}"
+    end
+
+    def next_link_uri(response)
+      link_header = response["Link"].to_s
+      return nil if link_header.empty?
+
+      link_header.split(",").each do |link|
+        match = link.match(/<([^>]+)>/)
+        rel_match = link.match(/rel="([^"]+)"/)
+        next unless match && rel_match
+        next unless rel_match[1].split.include?("next")
+
+        return URI.join(BASE_URL, match[1])
+      end
+
+      nil
     end
 
     def truthy?(value)

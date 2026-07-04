@@ -12,6 +12,7 @@ Read-only Scrum dashboard for Fizzy cards.
 - Supports manual refresh and polling intervals: off, 5 seconds, 10 seconds, 30 seconds
 - Uses a 5-second in-memory cache by default
 - No database
+- Follows Fizzy pagination using `Link` headers with `rel="next"`
 
 ## Setup
 
