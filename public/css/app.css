@@ -87,6 +87,12 @@ body {
   font-weight: 800;
 }
 
+.sprint-count {
+  color: var(--ink);
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
 .sprint-meta,
 .filter-label {
   color: var(--muted);
