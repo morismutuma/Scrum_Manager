@@ -194,11 +194,20 @@ body {
 }
 
 .work-card:hover {
-  border-color: var(--brand);
-  box-shadow: 0 8px 20px rgb(15 23 42 / 9%);
+  border-color: #cbd5e1;
 }
 
-.work-card strong {
+.card-title-link {
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.card-title-link:hover {
+  color: var(--brand);
+  text-decoration: underline;
+}
+
+.card-title-link strong {
   line-height: 1.25;
 }
 

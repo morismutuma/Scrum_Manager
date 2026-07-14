@@ -21,8 +21,10 @@
 
             <div class="card-stack">
               <% column[:cards].each do |card| %>
-                <a class="work-card" href="<%= h(card[:url]) %>" target="_blank" rel="noreferrer">
-                  <strong><%= h(card[:title]) %></strong>
+                <div class="work-card">
+                  <a class="card-title-link" href="<%= h(card[:url]) %>" target="_blank" rel="noreferrer">
+                    <strong><%= h(card[:title]) %></strong>
+                  </a>
                   <span class="card-line"><span class="card-icon">User</span> <%= h(card[:assignees].empty? ? "Unassigned" : card[:assignees].join(", ")) %></span>
                   <% unless card[:tags].empty? %>
                     <span class="tag-row">
@@ -35,7 +37,7 @@
                     </span>
                   <% end %>
                   <span class="card-line"><span class="card-icon">Time</span> <%= h(card[:last_active_label]) %></span>
-                </a>
+                </div>
               <% end %>
             </div>
           </div>
