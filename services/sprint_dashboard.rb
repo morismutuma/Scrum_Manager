@@ -12,9 +12,9 @@ module ScrumManager
 
     attr_reader :tag_title, :cards, :generated_at
 
-    def initialize(tag_title:, cards:, generated_at: Time.now)
+    def initialize(tag_title:, cards:, generated_at: Time.now, normalized: false)
       @tag_title = tag_title
-      @cards = Array(cards).map { |card| normalize_card(card) }
+      @cards = normalized ? Array(cards) : Array(cards).map { |card| normalize_card(card) }
       @generated_at = generated_at
     end
 
@@ -22,7 +22,7 @@ module ScrumManager
       filtered_cards = cards.select { |card| matches_assignee?(card, assignee) }
       filtered_cards = filtered_cards.select { |card| card[:board_name] == board } unless board == ALL_BOARDS
 
-      self.class.new(tag_title: tag_title, cards: filtered_cards, generated_at: generated_at)
+      self.class.new(tag_title: tag_title, cards: filtered_cards, generated_at: generated_at, normalized: true)
     end
 
     def assignees
