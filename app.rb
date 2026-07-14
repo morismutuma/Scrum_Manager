@@ -52,6 +52,7 @@ module ScrumManager
 
     get "/" do
       @sprints = mongo_store.sprint_tags
+      @sprint_card_counts = mongo_store.sprint_card_counts
       @last_sync = mongo_store.last_sync
       erb :index
     end

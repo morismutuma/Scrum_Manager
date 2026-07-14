@@ -23,7 +23,10 @@
   <div class="sprint-grid">
     <% @sprints.each do |sprint| %>
       <a class="sprint-tile" href="/sprints/<%= Rack::Utils.escape_path(sprint["title"]) %>">
-        <span class="sprint-title"><%= h(sprint_display_name(sprint["title"])) %></span>
+        <span class="sprint-title">
+          <%= h(sprint_display_name(sprint["title"])) %>
+          (<%= @sprint_card_counts.fetch(sprint["id"], 0) %> cards)
+        </span>
         <span class="sprint-meta">Open dashboard</span>
       </a>
     <% end %>

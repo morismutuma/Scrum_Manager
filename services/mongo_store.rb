@@ -31,6 +31,17 @@ module ScrumManager
         .map { |doc| from_doc(doc.fetch("raw", {})) }
     end
 
+    def sprint_card_counts
+      cards.aggregate(
+        [
+          { "$unwind" => "$sprint_tag_ids" },
+          { "$group" => { _id: "$sprint_tag_ids", count: { "$sum" => 1 } } }
+        ]
+      ).each_with_object({}) do |doc, counts|
+        counts[doc.fetch("_id")] = doc.fetch("count")
+      end
+    end
+
     def cards_for_sprint(tag_title)
       sprint = sprint_by_title(tag_title)
       return [] unless sprint
