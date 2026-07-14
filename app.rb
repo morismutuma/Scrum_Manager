@@ -40,6 +40,10 @@ module ScrumManager
 
         time.getlocal.strftime("%Y-%m-%d %H:%M:%S")
       end
+
+      def sprint_display_name(value)
+        value.to_s.sub(/\Asprint\s*(\d+)\z/i, 'Sprint \1')
+      end
     end
 
     before do
