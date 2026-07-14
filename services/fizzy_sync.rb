@@ -12,9 +12,16 @@ module ScrumManager
 
     def sync_all
       started_at = Time.now.utc
-      stats = { sprints: 0, cards: 0 }
+      stats = { tags: 0, sprints: 0, cards: 0 }
 
-      sprint_tags = @client.sprint_tags
+      all_tags = @client.tags
+      @store.upsert_tags(all_tags)
+      stats[:tags] = all_tags.length
+
+      sprint_tags = all_tags
+        .select { |tag| tag.fetch("title", "").downcase.start_with?("sprint") }
+        .sort_by { |tag| tag["created_at"].to_s }
+        .reverse
       @store.upsert_sprint_tags(sprint_tags)
       stats[:sprints] = sprint_tags.length
 

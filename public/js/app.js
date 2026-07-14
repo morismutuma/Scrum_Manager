@@ -28,12 +28,23 @@
 
   function cardMarkup(card) {
     const assignees = card.assignees && card.assignees.length ? card.assignees.join(", ") : "Unassigned";
+    const tags = card.tags && card.tags.length
+      ? `
+        <span class="tag-row">
+          <span class="card-icon">Tags:</span>
+          <span class="tag-list">
+            ${card.tags.map((tag) => `<span class="tag-badge tag-${escapeHtml(tag.kind)}">${escapeHtml(tag.label)}</span>`).join("")}
+          </span>
+        </span>
+      `
+      : "";
 
     return `
       <a class="work-card" href="${escapeHtml(card.url)}" target="_blank" rel="noreferrer">
         <strong>${escapeHtml(card.title)}</strong>
         <span><span class="card-icon">User</span> ${escapeHtml(assignees)}</span>
         <span><span class="card-icon">Board</span> ${escapeHtml(card.board_name)}</span>
+        ${tags}
         <span><span class="card-icon">Time</span> ${escapeHtml(card.last_active_label)}</span>
       </a>
     `;

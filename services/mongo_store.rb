@@ -70,6 +70,31 @@ module ScrumManager
       sprints.update_many({ id: { "$nin" => active_ids } }, { "$set" => { active: false, synced_at: now } })
     end
 
+    def upsert_tags(tags_payload)
+      now = Time.now.utc
+      active_ids = tags_payload.map { |tag| tag.fetch("id") }
+
+      tags_payload.each do |tag|
+        tags.update_one(
+          { id: tag.fetch("id") },
+          {
+            "$set" => {
+              id: tag.fetch("id"),
+              title: tag.fetch("title", ""),
+              title_downcase: tag.fetch("title", "").downcase,
+              created_at: parse_time(tag["created_at"]),
+              active: true,
+              raw: tag,
+              synced_at: now
+            }
+          },
+          upsert: true
+        )
+      end
+
+      tags.update_many({ id: { "$nin" => active_ids } }, { "$set" => { active: false, synced_at: now } })
+    end
+
     def replace_sprint_cards(tag, cards_payload)
       now = Time.now.utc
       tag_id = tag.fetch("id")
@@ -141,6 +166,10 @@ module ScrumManager
       client[:cards]
     end
 
+    def tags
+      client[:tags]
+    end
+
     def sync_runs
       client[:sync_runs]
     end
@@ -156,6 +185,9 @@ module ScrumManager
       cards.indexes.create_one({ number: 1 }, unique: true)
       cards.indexes.create_one({ sprint_tag_ids: 1 })
       cards.indexes.create_one({ board_name: 1 })
+      tags.indexes.create_one({ id: 1 }, unique: true)
+      tags.indexes.create_one({ title_downcase: 1 })
+      tags.indexes.create_one({ active: 1 })
       sync_runs.indexes.create_one({ type: 1, finished_at: -1 })
     end
 

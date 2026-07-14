@@ -13,6 +13,7 @@ Read-only Scrum dashboard for Fizzy cards.
 - Reads dashboard data from MongoDB so filtering does not call Fizzy
 - Provides a Fizzy sync command for cron jobs
 - Uses MongoDB as the local dashboard data store
+- Syncs all Fizzy tags and displays card tags as color-coded badges
 - Follows Fizzy pagination using `Link` headers with `rel="next"`
 
 ## Setup
@@ -84,8 +85,8 @@ bundle exec ruby bin/sync_fizzy
 
 The sync command:
 
-1. Fetches all Fizzy tags starting with `sprint`
-2. Upserts those sprint tags into MongoDB
+1. Fetches all Fizzy tags and stores them in MongoDB
+2. Selects tags starting with `sprint` as dashboard sprints
 3. Fetches cards for each sprint tag
 4. Fetches full card details
 5. Upserts cards and their sprint membership into MongoDB

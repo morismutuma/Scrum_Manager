@@ -18,5 +18,5 @@ module ScrumManager
   )
   stats = FizzySync.new(client: client, store: store).sync_all
 
-  puts "Sync complete: #{stats[:sprints]} sprints, #{stats[:cards]} cards"
+  puts "Sync complete: #{stats[:tags]} tags, #{stats[:sprints]} sprints, #{stats[:cards]} cards"
 end

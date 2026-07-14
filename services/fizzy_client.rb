@@ -23,10 +23,14 @@ module ScrumManager
     end
 
     def sprint_tags
-      all_tags
+      tags
         .select { |tag| tag.fetch("title", "").downcase.start_with?("sprint") }
         .sort_by { |tag| tag["created_at"].to_s }
         .reverse
+    end
+
+    def tags
+      paginated_json(tags_path)
     end
 
     def cards_for_sprint(tag_title)
@@ -42,10 +46,6 @@ module ScrumManager
     end
 
     private
-
-    def all_tags
-      paginated_json(tags_path)
-    end
 
     def card_detail(card)
       number = card["number"]

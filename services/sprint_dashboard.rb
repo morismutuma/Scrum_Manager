@@ -9,6 +9,19 @@ module ScrumManager
     EVERYONE = "Everyone"
     ALL_BOARDS = "All Boards"
     UNASSIGNED = "Unassigned"
+    EFFORT_TAGS = [
+      "#1 day",
+      "#1 week",
+      "#2 days",
+      "#2 hours",
+      "#2 weeks",
+      "#3 days",
+      "#3 hours",
+      "#4 hours",
+      "#5 days",
+      "#a few hours",
+      "#an hour or less"
+    ].freeze
 
     attr_reader :tag_title, :cards, :generated_at
 
@@ -80,7 +93,7 @@ module ScrumManager
         board_name: card.dig("board", "name") || "No Board",
         column_name: card.dig("column", "name"),
         assignees: normalize_assignees(card["assignees"]),
-        tags: Array(card["tags"]),
+        tags: normalize_tags(card["tags"]),
         last_active_at: card["last_active_at"],
         last_active_label: relative_time(card["last_active_at"]),
         closed: card["closed"] == true,
@@ -100,6 +113,41 @@ module ScrumManager
 
     def normalize_assignees(assignees)
       Array(assignees).filter_map { |assignee| assignee["name"].to_s unless assignee["name"].to_s.empty? }
+    end
+
+    def normalize_tags(tags)
+      Array(tags).filter_map do |tag|
+        label = tag_label(tag)
+        next if label.empty?
+
+        {
+          label: label,
+          key: status_key(label.delete_prefix("#")),
+          kind: tag_kind(label)
+        }
+      end
+    end
+
+    def tag_label(tag)
+      case tag
+      when Hash
+        tag["title"].to_s
+      else
+        tag.to_s
+      end
+    end
+
+    def tag_kind(label)
+      normalized = label.downcase.strip
+      return "epic" if normalized == "epic" || normalized == "#epic"
+      return "subtasks" if ["subtask", "subtasks", "#subtask", "#subtasks"].include?(normalized)
+      return "effort" if EFFORT_TAGS.include?(normalized)
+
+      "default-#{stable_tag_bucket(normalized)}"
+    end
+
+    def stable_tag_bucket(value)
+      value.bytes.sum % 6
     end
 
     def matches_assignee?(card, assignee)

@@ -25,6 +25,16 @@
                   <strong><%= h(card[:title]) %></strong>
                   <span><span class="card-icon">User</span> <%= h(card[:assignees].empty? ? "Unassigned" : card[:assignees].join(", ")) %></span>
                   <span><span class="card-icon">Board</span> <%= h(card[:board_name]) %></span>
+                  <% unless card[:tags].empty? %>
+                    <span class="tag-row">
+                      <span class="card-icon">Tags:</span>
+                      <span class="tag-list">
+                        <% card[:tags].each do |tag| %>
+                          <span class="tag-badge tag-<%= h(tag[:kind]) %>"><%= h(tag[:label]) %></span>
+                        <% end %>
+                      </span>
+                    </span>
+                  <% end %>
                   <span><span class="card-icon">Time</span> <%= h(card[:last_active_label]) %></span>
                 </a>
               <% end %>
