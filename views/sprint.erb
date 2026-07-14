@@ -6,7 +6,6 @@
   data-board="<%= h(@selected_board) %>">
   <div class="page-header">
     <div>
-      <p class="eyebrow">Sprint dashboard</p>
       <h1><%= h(sprint_display_name(@dashboard.tag_title)) %></h1>
       <p class="muted">
         <span data-card-count><%= @dashboard.cards.length %></span> cards
