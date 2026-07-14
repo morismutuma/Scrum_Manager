@@ -4,7 +4,7 @@
     <h1>Sprints</h1>
     <% if @last_sync %>
       <p class="muted">
-        Last synced <%= h(Time.parse(@last_sync["finished_at"].to_s).strftime("%Y-%m-%d %H:%M:%S")) %>
+        Last synced <%= h(local_time(@last_sync["finished_at"])) %>
       </p>
     <% end %>
   </div>

@@ -29,6 +29,17 @@ module ScrumManager
       def json_payload(payload)
         JSON.pretty_generate(payload)
       end
+
+      def local_time(value)
+        time =
+          if value.respond_to?(:getlocal)
+            value
+          else
+            Time.parse(value.to_s)
+          end
+
+        time.getlocal.strftime("%Y-%m-%d %H:%M:%S")
+      end
     end
 
     before do
