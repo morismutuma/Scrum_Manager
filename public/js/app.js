@@ -43,7 +43,6 @@
       <a class="work-card" href="${escapeHtml(card.url)}" target="_blank" rel="noreferrer">
         <strong>${escapeHtml(card.title)}</strong>
         <span class="card-line"><span class="card-icon">User</span> ${escapeHtml(assignees)}</span>
-        <span class="card-line"><span class="card-icon">Board</span> ${escapeHtml(card.board_name)}</span>
         ${tags}
         <span class="card-line"><span class="card-icon">Time</span> ${escapeHtml(card.last_active_label)}</span>
       </a>
