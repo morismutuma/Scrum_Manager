@@ -116,7 +116,7 @@ module ScrumManager
     end
 
     def normalize_tags(tags)
-      Array(tags).filter_map do |tag|
+      normalized_tags = Array(tags).filter_map do |tag|
         label = tag_label(tag)
         next if label.empty?
         next if sprint_number_tag?(label)
@@ -126,6 +126,10 @@ module ScrumManager
           key: status_key(label.delete_prefix("#")),
           kind: tag_kind(label)
         }
+      end
+
+      normalized_tags.sort_by.with_index do |tag, index|
+        [tag[:kind] == "effort" ? 0 : 1, index]
       end
     end
 
