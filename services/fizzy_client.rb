@@ -33,6 +33,10 @@ module ScrumManager
       tag = sprint_tags.find { |candidate| candidate.fetch("title", "").casecmp?(tag_title) }
       raise RequestError, "Sprint tag not found: #{tag_title}" unless tag
 
+      cards_for_sprint_tag(tag)
+    end
+
+    def cards_for_sprint_tag(tag)
       cards = paginated_json(cards_path, tag_ids: [tag.fetch("id")])
       cards.map { |card| card_detail(card) }
     end

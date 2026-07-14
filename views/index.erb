@@ -2,14 +2,22 @@
   <div>
     <p class="eyebrow">Fizzy Scrum Dashboard</p>
     <h1>Sprints</h1>
+    <% if @last_sync %>
+      <p class="muted">
+        Last synced <%= h(Time.parse(@last_sync["finished_at"].to_s).strftime("%Y-%m-%d %H:%M:%S")) %>
+      </p>
+    <% end %>
   </div>
-  <a class="btn btn-primary" href="/">Refresh</a>
+  <form method="post" action="/sync">
+    <button class="btn btn-primary" type="submit">Sync now</button>
+  </form>
 </section>
 
 <% if @sprints.empty? %>
   <div class="empty-state">
     <h2>No sprint tags found</h2>
-    <p>Fizzy returned no tags beginning with <code>sprint</code>.</p>
+    <p>No synced sprint tags beginning with <code>sprint</code> were found in MongoDB.</p>
+    <p>Run <code>bin/sync_fizzy</code> or click <strong>Sync now</strong> after configuring Fizzy and MongoDB.</p>
   </div>
 <% else %>
   <div class="sprint-grid">

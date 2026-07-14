@@ -2,7 +2,12 @@ GEM
   remote: https://rubygems.org/
   specs:
     base64 (0.3.0)
+    bigdecimal (3.3.1)
+    bson (5.2.0)
     logger (1.7.0)
+    mongo (2.24.1)
+      base64
+      bson (>= 4.14.1, < 6.0.0)
     mustermann (3.1.1)
     nio4r (2.7.5)
     puma (6.6.1)
@@ -31,13 +36,18 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  bigdecimal (~> 3.1)
+  mongo (~> 2.21)
   puma (~> 6.4)
   rackup (~> 2.1)
   sinatra (~> 4.1)
 
 CHECKSUMS
   base64 (0.3.0) sha256=27337aeabad6ffae05c265c450490628ef3ebd4b67be58257393227588f5a97b
+  bigdecimal (3.3.1) sha256=eaa01e228be54c4f9f53bf3cc34fe3d5e845c31963e7fcc5bedb05a4e7d52218
+  bson (5.2.0) sha256=c468c1e8a3cfa1e80531cc519a890f85586986721d8e305f83465cc36bb82608
   logger (1.7.0) sha256=196edec7cc44b66cfb40f9755ce11b392f21f7967696af15d274dde7edff0203
+  mongo (2.24.1) sha256=b6276ca2b7e8394f1cf27153977c736b21de83973b2a8e6fefef9ddad374ec48
   mustermann (3.1.1) sha256=4c6170c7234d5499c345562ba7c7dfe73e1754286dcc1abb053064d66a127198
   nio4r (2.7.5) sha256=6c90168e48fb5f8e768419c93abb94ba2b892a1d0602cb06eef16d8b7df1dca1
   puma (6.6.1) sha256=b9b56e4a4ea75d1bfa6d9e1972ee2c9f43d0883f011826d914e8e37b3694ea1e

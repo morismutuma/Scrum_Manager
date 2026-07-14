@@ -1,0 +1,22 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require "bundler/setup"
+require_relative "../services/fizzy_client"
+require_relative "../services/fizzy_sync"
+require_relative "../services/mongo_store"
+
+module ScrumManager
+  store = MongoStore.new(
+    uri: ENV["MONGODB_URI"],
+    database_name: ENV.fetch("MONGODB_DATABASE", "scrum_manager"),
+    server_selection_timeout: Float(ENV.fetch("MONGODB_SERVER_SELECTION_TIMEOUT", "2"))
+  )
+  client = FizzyClient.new(
+    token: ENV["FIZZY_TOKEN"],
+    account_slug: ENV["FIZZY_ACCOUNT_SLUG"]
+  )
+  stats = FizzySync.new(client: client, store: store).sync_all
+
+  puts "Sync complete: #{stats[:sprints]} sprints, #{stats[:cards]} cards"
+end

@@ -5,7 +5,8 @@ require "sinatra/base"
 require "time"
 
 require_relative "services/fizzy_client"
-require_relative "services/memory_cache"
+require_relative "services/fizzy_sync"
+require_relative "services/mongo_store"
 require_relative "services/sprint_dashboard"
 
 module ScrumManager
@@ -15,10 +16,6 @@ module ScrumManager
     set :views, proc { File.join(root, "views") }
     set :show_exceptions, false
     set :raise_errors, false
-
-    configure do
-      set :cache, MemoryCache.new(default_ttl: Integer(ENV.fetch("CACHE_TTL_SECONDS", "5")))
-    end
 
     helpers do
       def h(value)
@@ -39,7 +36,8 @@ module ScrumManager
     end
 
     get "/" do
-      @sprints = cached("sprints") { fizzy_client.sprint_tags }
+      @sprints = mongo_store.sprint_tags
+      @last_sync = mongo_store.last_sync
       erb :index
     end
 
@@ -47,7 +45,7 @@ module ScrumManager
       @sprint_tag = params[:tag]
       @selected_assignee = params.fetch("assignee", "Everyone")
       @selected_board = params.fetch("board", "All Boards")
-      base_dashboard = cached_dashboard(@sprint_tag)
+      base_dashboard = dashboard_from_store(@sprint_tag)
       @assignees = base_dashboard.assignees
       @boards = base_dashboard.boards
       @dashboard = base_dashboard.filtered(assignee: @selected_assignee, board: @selected_board)
@@ -58,12 +56,17 @@ module ScrumManager
     get "/api/sprints/:tag/cards" do
       content_type :json
 
-      dashboard = cached_dashboard(params[:tag]).filtered(
+      dashboard = dashboard_from_store(params[:tag]).filtered(
         assignee: params.fetch("assignee", "Everyone"),
         board: params.fetch("board", "All Boards")
       )
 
       json_payload(dashboard.to_h)
+    end
+
+    post "/sync" do
+      sync_service.sync_all
+      redirect "/"
     end
 
     not_found do
@@ -87,6 +90,20 @@ module ScrumManager
       erb :error
     end
 
+    error MongoStore::ConfigurationError do
+      status 500
+      @error_title = "MongoDB is not configured"
+      @error_message = env["sinatra.error"].message
+      erb :error
+    end
+
+    error Mongo::Error do
+      status 503
+      @error_title = "MongoDB request failed"
+      @error_message = env["sinatra.error"].message
+      erb :error
+    end
+
     error do
       status 500
       @error_title = "Unexpected error"
@@ -103,15 +120,21 @@ module ScrumManager
       )
     end
 
-    def cached_dashboard(tag_title)
-      cached(["dashboard", tag_title]) do
-        cards = fizzy_client.cards_for_sprint(tag_title)
-        SprintDashboard.new(tag_title: tag_title, cards: cards)
-      end
+    def mongo_store
+      @mongo_store ||= MongoStore.new(
+        uri: ENV["MONGODB_URI"],
+        database_name: ENV.fetch("MONGODB_DATABASE", "scrum_manager"),
+        server_selection_timeout: Float(ENV.fetch("MONGODB_SERVER_SELECTION_TIMEOUT", "2"))
+      )
     end
 
-    def cached(key, &block)
-      settings.cache.fetch(key, &block)
+    def sync_service
+      @sync_service ||= FizzySync.new(client: fizzy_client, store: mongo_store)
+    end
+
+    def dashboard_from_store(tag_title)
+      cards = mongo_store.cards_for_sprint(tag_title)
+      SprintDashboard.new(tag_title: tag_title, cards: cards)
     end
   end
 end
