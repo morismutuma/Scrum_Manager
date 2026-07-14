@@ -49,6 +49,7 @@ module ScrumManager
       @assignees = base_dashboard.assignees
       @boards = base_dashboard.boards
       @dashboard = base_dashboard.filtered(assignee: @selected_assignee, board: @selected_board)
+      @last_sync = mongo_store.last_sync
 
       erb :sprint
     end

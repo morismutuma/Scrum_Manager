@@ -9,7 +9,7 @@ Read-only Scrum dashboard for Fizzy cards.
 - Groups sprint cards by client board and board status
 - Supports assignee and board filters
 - Opens Fizzy cards in a new tab
-- Supports manual refresh and polling intervals: off, 5 seconds, 10 seconds, 30 seconds
+- Supports manual refresh from MongoDB
 - Reads dashboard data from MongoDB so filtering does not call Fizzy
 - Provides a Fizzy sync command for cron jobs
 - Uses MongoDB as the local dashboard data store

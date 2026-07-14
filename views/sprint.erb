@@ -10,18 +10,15 @@
       <h1><%= h(@dashboard.tag_title) %></h1>
       <p class="muted">
         <span data-card-count><%= @dashboard.cards.length %></span> cards ·
-        Last updated <span data-last-updated><%= h(@dashboard.generated_at.strftime("%H:%M:%S")) %></span>
+        Loaded from DB <span data-last-updated><%= h(@dashboard.generated_at.strftime("%H:%M:%S")) %></span>
+        <% if @last_sync %>
+          · Last synced <%= h(Time.parse(@last_sync["finished_at"].to_s).strftime("%Y-%m-%d %H:%M:%S")) %>
+        <% end %>
       </p>
     </div>
 
     <div class="toolbar">
-      <select class="form-select" data-polling-select aria-label="Polling interval">
-        <option value="0">Polling off</option>
-        <option value="5000">Every 5 sec</option>
-        <option value="10000">Every 10 sec</option>
-        <option value="30000">Every 30 sec</option>
-      </select>
-      <button class="btn btn-primary" type="button" data-refresh-button>Refresh now</button>
+      <button class="btn btn-primary" type="button" data-refresh-button>Refresh from DB</button>
     </div>
   </div>
 

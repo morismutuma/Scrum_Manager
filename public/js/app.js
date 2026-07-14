@@ -3,12 +3,10 @@
   if (!dashboard) return;
 
   const refreshButton = dashboard.querySelector("[data-refresh-button]");
-  const pollingSelect = dashboard.querySelector("[data-polling-select]");
   const boardContainer = dashboard.querySelector("[data-board-container]");
   const lastUpdated = dashboard.querySelector("[data-last-updated]");
   const cardCount = dashboard.querySelector("[data-card-count]");
   const errorBanner = dashboard.querySelector("[data-error-banner]");
-  let timer = null;
 
   function escapeHtml(value) {
     return String(value || "")
@@ -113,16 +111,5 @@
     }
   }
 
-  function updatePolling() {
-    if (timer) clearInterval(timer);
-
-    const interval = Number(pollingSelect.value);
-    if (interval > 0) {
-      timer = setInterval(refreshBoard, interval);
-      refreshBoard();
-    }
-  }
-
   refreshButton.addEventListener("click", refreshBoard);
-  pollingSelect.addEventListener("change", updatePolling);
 })();
