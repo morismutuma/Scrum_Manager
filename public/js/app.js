@@ -4,7 +4,6 @@
 
   const refreshButton = dashboard.querySelector("[data-refresh-button]");
   const boardContainer = dashboard.querySelector("[data-board-container]");
-  const lastUpdated = dashboard.querySelector("[data-last-updated]");
   const cardCount = dashboard.querySelector("[data-card-count]");
   const errorBanner = dashboard.querySelector("[data-error-banner]");
 
@@ -101,7 +100,6 @@
 
       const data = await response.json();
       renderBoard(data);
-      lastUpdated.textContent = data.generated_at_label;
       cardCount.textContent = data.cards_count;
     } catch (error) {
       errorBanner.textContent = error.message;
