@@ -10,17 +10,17 @@ module ScrumManager
     ALL_BOARDS = "All Boards"
     UNASSIGNED = "Unassigned"
     EFFORT_TAGS = [
-      "#1 day",
-      "#1 week",
-      "#2 days",
-      "#2 hours",
-      "#2 weeks",
-      "#3 days",
-      "#3 hours",
-      "#4 hours",
-      "#5 days",
-      "#a few hours",
-      "#an hour or less"
+      "1 day",
+      "1 week",
+      "2 days",
+      "2 hours",
+      "2 weeks",
+      "3 days",
+      "3 hours",
+      "4 hours",
+      "5 days",
+      "a few hours",
+      "an hour or less"
     ].freeze
 
     attr_reader :tag_title, :cards, :generated_at
@@ -143,12 +143,16 @@ module ScrumManager
     end
 
     def tag_kind(label)
-      normalized = label.downcase.strip
+      normalized = normalized_tag_label(label)
       return "epic" if normalized == "epic" || normalized == "#epic"
       return "subtasks" if ["subtask", "subtasks", "#subtask", "#subtasks"].include?(normalized)
       return "effort" if EFFORT_TAGS.include?(normalized)
 
       "default-#{stable_tag_bucket(normalized)}"
+    end
+
+    def normalized_tag_label(label)
+      label.downcase.strip.delete_prefix("#").strip
     end
 
     def sprint_number_tag?(label)
