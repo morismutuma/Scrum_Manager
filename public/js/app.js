@@ -42,10 +42,10 @@
     return `
       <a class="work-card" href="${escapeHtml(card.url)}" target="_blank" rel="noreferrer">
         <strong>${escapeHtml(card.title)}</strong>
-        <span><span class="card-icon">User</span> ${escapeHtml(assignees)}</span>
-        <span><span class="card-icon">Board</span> ${escapeHtml(card.board_name)}</span>
+        <span class="card-line"><span class="card-icon">User</span> ${escapeHtml(assignees)}</span>
+        <span class="card-line"><span class="card-icon">Board</span> ${escapeHtml(card.board_name)}</span>
         ${tags}
-        <span><span class="card-icon">Time</span> ${escapeHtml(card.last_active_label)}</span>
+        <span class="card-line"><span class="card-icon">Time</span> ${escapeHtml(card.last_active_label)}</span>
       </a>
     `;
   }

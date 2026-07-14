@@ -119,6 +119,7 @@ module ScrumManager
       Array(tags).filter_map do |tag|
         label = tag_label(tag)
         next if label.empty?
+        next if sprint_number_tag?(label)
 
         {
           label: label,
@@ -144,6 +145,10 @@ module ScrumManager
       return "effort" if EFFORT_TAGS.include?(normalized)
 
       "default-#{stable_tag_bucket(normalized)}"
+    end
+
+    def sprint_number_tag?(label)
+      label.downcase.strip.match?(/\Asprint.*\d\z/)
     end
 
     def stable_tag_bucket(value)
