@@ -1,0 +1,204 @@
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h1>Scrum Reports</h1>
+    <p class="text-secondary mb-0">Card-count reports from locally recorded sync snapshots.</p>
+  </div>
+  <a href="/" class="btn btn-outline-secondary">Back to Sprints</a>
+</div>
+
+<form id="filterForm" method="GET" action="/reports" class="d-flex gap-3 align-items-end flex-wrap mb-4 p-3 border rounded bg-light">
+  <div>
+    <label for="sprintSelect" class="form-label mb-1"><strong>Sprint</strong></label>
+    <select class="form-select" name="sprint" id="sprintSelect" onchange="this.form.submit()">
+      <% @sprints.each do |s| %>
+        <option value="<%= s %>" <%= 'selected' if s == @selected_sprint %>><%= sprint_display_name(s) %></option>
+      <% end %>
+    </select>
+  </div>
+  <div>
+    <label for="boardSelect" class="form-label mb-1"><strong>Board</strong></label>
+    <select class="form-select" name="board" id="boardSelect" onchange="this.form.submit()">
+      <% @boards.each do |b| %>
+        <option value="<%= b %>" <%= 'selected' if b == @selected_board %>><%= b %></option>
+      <% end %>
+    </select>
+  </div>
+  <div>
+    <label for="assigneeSelect" class="form-label mb-1"><strong>Assignee</strong></label>
+    <select class="form-select" name="assignee" id="assigneeSelect" onchange="this.form.submit()">
+      <% @assignees.each do |a| %>
+        <option value="<%= a %>" <%= 'selected' if a == @selected_assignee %>><%= a %></option>
+      <% end %>
+    </select>
+  </div>
+  <div class="ms-auto d-flex align-items-center gap-2">
+    <input type="checkbox" id="autoPoll" checked>
+    <label for="autoPoll" class="mb-0">Live polling (5s)</label>
+    <span id="pollStatus" class="small text-success">Active</span>
+  </div>
+</form>
+
+<div class="row g-3 mb-4">
+  <div class="col-6 col-lg-2"><div class="border rounded p-3 h-100"><div class="text-secondary small">Initial commitment</div><strong id="metricCommit">Not recorded</strong></div></div>
+  <div class="col-6 col-lg-2"><div class="border rounded p-3 h-100"><div class="text-secondary small">Current scope</div><strong id="metricTotal">0</strong></div></div>
+  <div class="col-6 col-lg-2"><div class="border rounded p-3 h-100"><div class="text-secondary small">Completed</div><strong id="metricDone">0</strong></div></div>
+  <div class="col-6 col-lg-2"><div class="border rounded p-3 h-100"><div class="text-secondary small">Remaining</div><strong id="metricRemaining">0</strong></div></div>
+  <div class="col-6 col-lg-2"><div class="border rounded p-3 h-100"><div class="text-secondary small">Complete</div><strong id="metricCompletion">0%</strong></div></div>
+  <div class="col-6 col-lg-2"><div class="border rounded p-3 h-100"><div class="text-secondary small">Avg. completed / sprint</div><strong id="metricVelocity">Not available</strong></div></div>
+</div>
+
+<div class="d-flex gap-2 border-bottom mb-3" role="tablist" aria-label="Scrum reports">
+  <button type="button" class="btn btn-link text-decoration-none border-bottom border-3" data-report="burndown" role="tab" aria-selected="true">Burndown</button>
+  <button type="button" class="btn btn-link text-secondary text-decoration-none" data-report="burnup" role="tab" aria-selected="false">Burnup</button>
+  <button type="button" class="btn btn-link text-secondary text-decoration-none" data-report="velocity" role="tab" aria-selected="false">Velocity</button>
+</div>
+
+<section class="border rounded p-3 p-md-4 bg-white">
+  <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+    <div>
+      <h2 id="reportTitle" class="h4 mb-1">Burndown</h2>
+      <p id="reportDates" class="small text-secondary mb-0">Sprint dates are inferred from the sprint tag and configured duration.</p>
+    </div>
+    <span id="lastUpdated" class="small text-secondary">Waiting for report data</span>
+  </div>
+  <div style="height: 400px; width: 100%;"><canvas id="reportChart" aria-label="Selected Scrum report"></canvas></div>
+  <p id="historyStatus" class="small text-secondary mt-3 mb-0">No snapshots recorded yet.</p>
+</section>
+
+<script>
+  let chartInstance = null;
+  let reportData = null;
+  let selectedReport = 'burndown';
+  let requestPending = false;
+
+  const reportTitles = {
+    burndown: 'Burndown',
+    burnup: 'Burnup',
+    velocity: 'Velocity'
+  };
+
+  function sprintLabel(title) {
+    return String(title).replace(/^sprint\s*(\d+)$/i, 'Sprint $1');
+  }
+
+  function renderChart() {
+    if (!reportData) return;
+
+    const velocity = reportData.velocity;
+    const labels = selectedReport === 'burnup'
+      ? velocity.sprints.map(row => sprintLabel(row.sprint))
+      : selectedReport === 'velocity'
+      ? velocity.sprints.map(row => row.sprint)
+      : [];
+    const datasets = selectedReport === 'burndown'
+      ? [
+          { label: 'Ideal remaining', data: reportData.chart.ideal_remaining, borderColor: '#7b8794', borderDash: [6, 4], fill: false },
+          { label: 'Actual remaining', data: reportData.chart.actual_remaining, borderColor: '#167d8d', backgroundColor: 'rgba(22, 125, 141, 0.12)', fill: true, borderWidth: 3 }
+        ]
+      : selectedReport === 'burnup'
+        ? [
+            { label: 'Completed', data: velocity.sprints.map(row => row.completed), borderColor: '#218739', backgroundColor: 'rgba(33, 135, 57, 0.1)', fill: false, borderWidth: 3 },
+            { label: 'Total scope', data: velocity.sprints.map(row => row.scope), borderColor: '#d28b26', backgroundColor: 'rgba(210, 139, 38, 0.1)', fill: false, borderWidth: 3 }
+          ]
+        : [
+            { label: 'Committed', data: velocity.sprints.map(row => row.committed), backgroundColor: '#6e8db5' },
+            { label: 'Completed', data: velocity.sprints.map(row => row.completed), backgroundColor: '#218739' }
+          ];
+
+    if (chartInstance) chartInstance.destroy();
+    chartInstance = new Chart(document.getElementById('reportChart'), {
+      type: selectedReport === 'velocity' ? 'bar' : 'line',
+      data: { labels, datasets },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: {
+            beginAtZero: true,
+            max: selectedReport === 'velocity' ? undefined : 100,
+            title: {
+              display: true,
+              text: selectedReport === 'burndown'
+                ? 'Remaining work (%)'
+                : selectedReport === 'burnup'
+                  ? 'Cards (story points unavailable)'
+                  : 'Number of cards'
+            }
+          },
+          x: {
+            type: selectedReport === 'burndown' ? 'linear' : 'category',
+            min: selectedReport === 'burndown' ? 0 : undefined,
+            max: selectedReport === 'burndown' ? reportData.duration_days : undefined,
+            ticks: selectedReport !== 'burndown' ? {} : {
+              stepSize: 1,
+              callback: value => value === 0 ? 'Start' : `Day ${value}`
+            },
+            title: { display: true, text: selectedReport === 'burndown' ? 'Sprint day' : 'Sprint' }
+          }
+        }
+      }
+    });
+  }
+
+  function selectReport(report) {
+    selectedReport = report;
+    document.querySelectorAll('[data-report]').forEach(button => {
+      const active = button.dataset.report === report;
+      button.classList.toggle('text-secondary', !active);
+      button.classList.toggle('border-bottom', active);
+      button.classList.toggle('border-3', active);
+      button.setAttribute('aria-selected', String(active));
+    });
+    document.getElementById('reportTitle').innerText = reportTitles[report];
+    renderChart();
+  }
+
+  async function fetchReportData() {
+    if (requestPending) return;
+    requestPending = true;
+    const params = new URLSearchParams({
+      sprint: document.getElementById('sprintSelect').value,
+      board: document.getElementById('boardSelect').value,
+      assignee: document.getElementById('assigneeSelect').value
+    });
+
+    try {
+      const response = await fetch(`/api/reports/burndown?${params}`);
+      if (!response.ok) throw new Error(`Report request failed (${response.status})`);
+      reportData = await response.json();
+      document.getElementById('metricCommit').innerText = reportData.initial_commitment ?? 'Not recorded';
+      document.getElementById('metricTotal').innerText = reportData.total_cards;
+      document.getElementById('metricDone').innerText = reportData.done_cards;
+      document.getElementById('metricRemaining').innerText = reportData.remaining_cards;
+      document.getElementById('metricCompletion').innerText = reportData.total_cards
+        ? `${Math.round((reportData.done_cards / reportData.total_cards) * 100)}%`
+        : '0%';
+      document.getElementById('metricVelocity').innerText = reportData.velocity.average_completed ?? 'Not available';
+      document.getElementById('lastUpdated').innerText = `Updated ${reportData.generated_at}`;
+      document.getElementById('historyStatus').innerText = reportData.history_status;
+      document.getElementById('reportDates').innerText = reportData.start_date && reportData.end_date
+        ? `Inferred dates: ${reportData.start_date.slice(0, 10)} to ${reportData.end_date.slice(0, 10)} (${reportData.duration_days}-day duration)`
+        : 'Sprint start and end dates are unavailable.';
+      renderChart();
+    } catch (error) {
+      document.getElementById('historyStatus').innerText = `Could not refresh report: ${error.message}`;
+    } finally {
+      requestPending = false;
+    }
+  }
+
+  document.querySelectorAll('[data-report]').forEach(button => {
+    button.addEventListener('click', () => selectReport(button.dataset.report));
+  });
+  document.getElementById('autoPoll').addEventListener('change', event => {
+    document.getElementById('pollStatus').innerText = event.target.checked ? 'Active' : 'Paused';
+    fetchReportData();
+  });
+
+  fetchReportData();
+  setInterval(() => {
+    if (document.getElementById('autoPoll').checked) fetchReportData();
+  }, 5000);
+</script>

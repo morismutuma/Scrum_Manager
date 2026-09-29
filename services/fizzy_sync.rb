@@ -24,15 +24,21 @@ module ScrumManager
         .reverse
       @store.upsert_sprint_tags(sprint_tags)
       stats[:sprints] = sprint_tags.length
+      snapshot_payloads = []
 
       sprint_tags.each do |tag|
         cards = @client.cards_for_sprint_tag(tag)
         @store.replace_sprint_cards(tag, cards)
+        snapshot_payloads << [tag, cards]
         stats[:cards] += cards.length
         @logger.puts "Synced #{cards.length} cards for #{tag.fetch("title", tag.fetch("id"))}"
       end
 
-      @store.record_sync!(started_at: started_at, finished_at: Time.now.utc, stats: stats)
+      finished_at = Time.now.utc
+      snapshot_payloads.each do |tag, cards|
+        @store.record_sprint_snapshot(tag: tag, cards_payload: cards, observed_at: finished_at)
+      end
+      @store.record_sync!(started_at: started_at, finished_at: finished_at, stats: stats)
       stats
     rescue StandardError => e
       @store.record_sync!(started_at: started_at, finished_at: Time.now.utc, stats: stats, error: "#{e.class}: #{e.message}")

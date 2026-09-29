@@ -15,6 +15,28 @@ Read-only Scrum dashboard for Fizzy cards.
 - Uses MongoDB as the local dashboard data store
 - Syncs all Fizzy tags and displays card tags as color-coded badges
 - Follows Fizzy pagination using `Link` headers with `rel="next"`
+- Provides snapshot-based Burndown, Burnup, and Velocity reports
+
+## Reports
+
+The Burndown, Burnup, and Velocity reports use card counts, not story points. Sprint dates are estimated from the sprint tag's `created_at` and `SPRINT_DURATION_DAYS` (default: `10`).
+
+Reports require MongoDB, Fizzy credentials, and a successful full sync. Each sync stores a snapshot of sprint cards and their status, board, and assignees. The first snapshot is only a baseline; run another sync to see progress. Earlier history cannot be reconstructed.
+
+Run the focused report tests:
+
+```bash
+bundle exec ruby -Itest test/sprint_reports_test.rb
+```
+
+For a manual check, load `.env`, sync twice (with time or card changes between syncs), start the app, then open `http://localhost:4567/reports`:
+
+```bash
+export $(grep -v '^#' .env | xargs)
+bundle exec ruby bin/sync_fizzy
+bundle exec ruby bin/sync_fizzy
+bundle exec rackup -p 4567
+```
 
 ## Setup
 
@@ -31,9 +53,16 @@ FIZZY_ACCOUNT_SLUG=6116053
 MONGODB_URI=mongodb://127.0.0.1:27017
 MONGODB_DATABASE=scrum_manager
 MONGODB_SERVER_SELECTION_TIMEOUT=2
+SPRINT_DURATION_DAYS=10
 FIZZY_LOG_HTTP=false
 FIZZY_LOG_RESPONSE_BODY=true
 FIZZY_LOG_BODY_LIMIT=12000
+```
+
+Generate the required Rack session secret (64 bytes minimum):
+
+```bash
+printf 'SESSION_SECRET=%s\n' "$(openssl rand -hex 64)" >> .env
 ```
 
 Load the environment and run the app:
@@ -67,10 +96,12 @@ FIZZY_ACCOUNT_SLUG
 MONGODB_URI
 MONGODB_DATABASE
 MONGODB_SERVER_SELECTION_TIMEOUT
+SESSION_SECRET
 ```
 
 `MONGODB_URI` defaults to `mongodb://127.0.0.1:27017`.
 `MONGODB_SERVER_SELECTION_TIMEOUT` is optional and defaults to `2` seconds.
+`SESSION_SECRET` must be at least 64 bytes; generate it with `openssl rand -hex 64`.
 
 ## Fizzy Sync
 

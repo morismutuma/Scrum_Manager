@@ -52,6 +52,39 @@ module ScrumManager
         .map { |doc| from_doc(doc.fetch("raw", {})) }
     end
 
+    def snapshots_for_sprint(tag_title)
+      sprint = sprint_by_title(tag_title)
+      return [] unless sprint
+
+      sprint_snapshots_collection
+        .find(sprint_tag_id: sprint.fetch("id"))
+        .sort(observed_at: 1)
+        .map { |doc| from_doc(doc) }
+    end
+
+    def all_sprint_snapshots
+      sprint_snapshots_collection
+        .find
+        .sort(observed_at: 1)
+        .map { |doc| from_doc(doc) }
+    end
+
+    def record_sprint_snapshot(tag:, cards_payload:, observed_at: Time.now.utc)
+      sprint_snapshots_collection.insert_one(
+        sprint_tag_id: tag.fetch("id"),
+        sprint_title: tag.fetch("title", ""),
+        observed_at: observed_at,
+        cards: cards_payload.map do |card|
+          {
+            number: card["number"],
+            board_name: card.dig("board", "name") || "No Board",
+            assignee_names: Array(card["assignees"]).filter_map { |assignee| assignee["name"] },
+            status: dashboard_status(card)
+          }
+        end
+      )
+    end
+
     def last_sync
       sync_runs.find(type: "fizzy_full_sync").sort(finished_at: -1).first
     end
@@ -185,6 +218,10 @@ module ScrumManager
       client[:sync_runs]
     end
 
+    def sprint_snapshots_collection
+      client[:sprint_snapshots]
+    end
+
     def sprint_by_title(tag_title)
       sprints.find(title_downcase: tag_title.to_s.downcase, active: true).first
     end
@@ -199,6 +236,7 @@ module ScrumManager
       tags.indexes.create_one({ id: 1 }, unique: true)
       tags.indexes.create_one({ title_downcase: 1 })
       tags.indexes.create_one({ active: 1 })
+      sprint_snapshots_collection.indexes.create_one({ sprint_tag_id: 1, observed_at: 1 })
       sync_runs.indexes.create_one({ type: 1, finished_at: -1 })
     end
 

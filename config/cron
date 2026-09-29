@@ -1,0 +1,16 @@
+# Run Fizzy sync every 30 minutes.
+#
+# Update the project path and environment values before installing:
+# crontab config/cron.example
+
+SHELL=/bin/zsh
+#PATH=/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+FIZZY_ACCOUNT_SLUG=6290580
+FIZZY_TOKEN= 11ujN9Qgfkj5S38WphcefjsU
+MONGODB_URI=mongodb://127.0.0.1:27017
+MONGODB_DATABASE=scrum_manager
+MONGODB_SERVER_SELECTION_TIMEOUT=2
+
+*/30 * * * * cd /home/moris/F/Fizzy/scrum_manager && bundle exec ruby bin/sync_fizzy >> /tmp/scrum_manager_fizzy_sync.log 2>&1
+#*/30 * * * * cd /Users/banta/Projects/Finplus/Utils/scrum_manager && bundle exec ruby bin/sync_fizzy >> /tmp/scrum_manager_fizzy_sync.log 2>&1

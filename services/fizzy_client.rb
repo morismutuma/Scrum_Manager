@@ -45,6 +45,28 @@ module ScrumManager
       cards.map { |card| card_detail(card) }
     end
 
+    def update_card(card_id, attributes)
+      uri = build_uri(card_path(card_id), {})
+      request_headers = {
+        "Authorization" => "Bearer [REDACTED]",
+        "Content-Type" => "application/json"
+      }
+      log_request("PATCH", uri, request_headers)
+
+      response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: uri.scheme == "https") do |http|
+        request = Net::HTTP::Patch.new(uri)
+        request["Authorization"] = "Bearer #{@token}"
+        request["Content-Type"] = "application/json"
+        request.body = JSON.generate(attributes)
+        http.request(request)
+      end
+      log_response(response)
+
+      response.is_a?(Net::HTTPSuccess)
+    rescue SocketError, SystemCallError, Timeout::Error => e
+      raise RequestError, "Could not reach Fizzy: #{e.message}"
+    end
+
     private
 
     def card_detail(card)

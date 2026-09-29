@@ -1,0 +1,24 @@
+<div class="mb-4">
+  <h1>Edit Card</h1>
+</div>
+
+<form action="/cards/<%= h(@card['_id']) %>/update" method="POST" class="d-flex flex-column gap-3" style="max-width: 36rem;">
+  <div>
+    <label for="title" class="form-label">Title</label>
+    <input class="form-control" type="text" id="title" name="title" value="<%= h(@card['title']) %>" required>
+  </div>
+
+  <div>
+    <label for="status" class="form-label">Status</label>
+    <select class="form-select" id="status" name="status">
+      <option value="Done" <%= 'selected' if @card['status'] == 'Done' %>>Done</option>
+      <option value="Not Now" <%= 'selected' if @card['status'] == 'Not Now' %>>Not Now</option>
+      <option value="In Progress" <%= 'selected' if @card['status'] == 'In Progress' %>>In Progress</option>
+    </select>
+  </div>
+
+  <div class="d-flex gap-2">
+    <button class="btn btn-primary" type="submit">Save &amp; Sync to Fizzy</button>
+    <a class="btn btn-outline-secondary" href="/">Cancel</a>
+  </div>
+</form>
